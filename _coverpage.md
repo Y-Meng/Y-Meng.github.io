@@ -4,4 +4,4 @@
 
 
 [GitHub](https://github.com/Y-Meng)
-[Get Started](note)
+[Get Started](es7.3/)
