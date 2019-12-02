@@ -20,3 +20,7 @@
     * [3.9.安装x-pack](es7.3/3-9-xpack)
     * [3.10.x-pack Java客户端配置](es7.3/3-10-xpack-java)
     * [3.11.x-pack引导程序检查](es7.3/3-11-xpack-boot)
+* [4.Elasticsearch升级更新](es7.3/4-0-upgrade)
+    * [4.1.滚动升级](es7.3/4-1-roll-upgrage)
+    * [4.2.集群重启升级](es7.3/4-2-cluster-upgrade)
+    * [4.3.升级前重建索引](es7.3/4-3-reindex-before-upgrade)
