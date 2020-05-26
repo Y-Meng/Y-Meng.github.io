@@ -111,13 +111,34 @@ sudo swapoff -a
 这个设置不需要重新启动ElasticSearch。 
 
 要永久禁用它，您需要编辑/etc/fstab文件并注释掉包含单词swap的任何行。
- 
+
 在Windows上，完全通过系统属性→高级→性能→高级→虚拟内存禁用分页文件，可以实现等效功能。 
 
 ### 配置swappiness
 
 Linux系统上可用的另一个选项是确保sysctl值vm.swappiness设置为1。
 这减少了内核交换的倾向，在正常情况下不应该导致交换，同时仍然允许整个系统在紧急情况下交换。
+
+临时调整的方法如下:
+
+```shell
+sudo sysctl vm.swappiness=1
+# 查看
+cat /proc/sys/vm/swappiness
+```
+
+永久调整
+
+```shell
+sudo vi /etc/sysctl.conf
+# 在最后加上
+vm.swappiness=1
+# 然后执行命令：
+sudo sysctl -p
+```
+
+
+
 
 ### 启用bootstrap.memory_lock
 
@@ -137,7 +158,7 @@ GET _nodes?filter_path=**.mlockall
 在Linux/Unix系统上，最可能的原因是运行ElasticSearch的用户没有锁定内存的权限。这可授予如下：
 
 * .zip和.tar.gz
-在启动elasticsearch之前，使用root权限运行ulimit-l unlimited，或者在/etc/security/limits.conf中将memlock设置为unlimited。
+在启动elasticsearch之前，使用root权限运行ulimit -l unlimited，或者在/etc/security/limits.conf中将memlock设置为unlimited。
 
 * RPM和Debian
 在系统配置文件中将max_locked_memory设置为unlimited（无限制）（对于使用systemd的系统，请参阅下面的内容）。
@@ -163,7 +184,48 @@ export ES_JAVA_OPTS="$ES_JAVA_OPTS -Djna.tmpdir=<path>"
 ElasticSearch使用许多文件描述符或文件句柄。文件描述符用完可能是灾难性的，而且很可能会导致数据丢失。
 确保将运行ElasticSearch的用户的打开文件描述符的数量限制增加到65536或更高。
 
-对于.zip和.tar.gz包，请在启动elasticsearch之前使用root权限执行ulimit-n 65535，或者在/etc/security/limits.conf中将nofile设置为65535。
+对于.zip和.tar.gz包，请在启动elasticsearch之前使用root权限执行
+
+临时设置
+
+```shell
+ulimit -n 65535
+```
+
+永久设置在/etc/security/limits.conf中将nofile设置为65535。
+
+```shell
+vi /etc/security/limits.conf
+# 添加
+elasticsearch  -  nofile  65535
+```
+
+## 线程数量
+
+[原文](https://www.elastic.co/guide/en/elasticsearch/reference/current/max-number-of-threads.html)
+
+ElasticSearch为不同类型的操作使用许多线程池。
+重要的是，它能够在需要时创建新的线程。确保ElasticSearch用户可以创建的线程数至少为4096个。
+
+这可以通过在启动elasticsearch之前使用root用户执行
+
+临时设置
+
+```shell
+ulimit -u 4096
+```
+
+或者永久设置通过在/etc/security/limits.conf中将nproc设置为4096来完成。
+
+```shell
+vi /etc/security/limits.conf
+# 添加
+elasticsearch  -  nproc  4096
+```
+
+当在systemd下作为服务运行时，rpm安装将自动为elasticsearch进程配置线程数。不需要其他配置。
+
+
 
 ## 虚拟内存
 
@@ -176,21 +238,22 @@ ElasticSearch默认使用mmapfs目录存储其索引。mmap计数的默认操作
 sysctl -w vm.max_map_count=262144
 ```
 要永久设置此值，请更新/etc/sysctl.conf中的vm.max_map_count设置。
-要在重新启动后验证，请运行sysctl vm.max_map_count。
+
+```shell
+vi /etc/sysctl.conf
+# 添加
+vm.max_map_count=262144
+```
+
+要在重新启动后验证，请运行
+
+```shell
+sysctl vm.max_map_count # 查看
+```
 
 RPM和Debian软件包将自动配置此设置。无需进一步配置。
 
-## 线程数量
 
-[原文](https://www.elastic.co/guide/en/elasticsearch/reference/current/max-number-of-threads.html)
-
-ElasticSearch为不同类型的操作使用许多线程池。
-重要的是，它能够在需要时创建新的线程。确保ElasticSearch用户可以创建的线程数至少为4096个。
-
-这可以通过在启动elasticsearch之前使用root用户执行ulimit-u 4096完成，
-或者通过在/etc/security/limits.conf中将nproc设置为4096来完成。
-
-当在systemd下作为服务运行时，包分发将自动为elasticsearch进程配置线程数。不需要其他配置。
 
 ## DNS缓存设置
 
