@@ -223,7 +223,7 @@ ps -p 1
 
 
 
-### 4.1. 使用SysV init 运行ES
+### 4.1. 使用SysV init (CentOS 6) 运行ES
 
 使用chkconfig命令配置ES系统开机时自动启动
 
@@ -240,7 +240,7 @@ sudo -i service elasticsearch stop
 
 如果ES由于某些原因启动失败，将会打印失败日志到/var/log/elasticsearch/目录
 
-### 4.2. 使用systemd 运行ES
+### 4.2. 使用systemd (CentOS 7+) 运行ES
 
 使用systemctl命令配置ES开机自动启动：
 
