@@ -1,0 +1,1 @@
+* [rust安装](0-install.md)
